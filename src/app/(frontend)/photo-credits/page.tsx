@@ -4,6 +4,7 @@ import { Reveal, TextReveal } from '@/components/animations/reveal'
 import { CmsImage } from '@/components/media/cms-image'
 import { SectionLabel } from '@/components/ui/primitives'
 import { getCreditedMedia, getSettings } from '@/lib/cms/queries'
+import { isVideo, mediaUrl } from '@/lib/media'
 import { buildMetadata } from '@/lib/seo'
 
 export const revalidate = 3600
@@ -30,7 +31,7 @@ export default async function PhotoCreditsPage() {
         <TextReveal as="h1" text="Photo credits" immediate className="text-display-lg text-fg" />
         <Reveal immediate delay={200}>
           <p className="mt-8 max-w-2xl text-lead text-fg-muted">
-            Photographs on this website are used under the licences listed below. Thank you to the photographers who
+            Photographs and video on this website are used under the licences listed below. Thank you to the photographers who
             share their work.
           </p>
         </Reveal>
@@ -40,13 +41,24 @@ export default async function PhotoCreditsPage() {
             {media.map((m) => (
               <li key={m.id} className="grid grid-cols-[6rem_1fr] gap-4 border-t border-rule pt-5">
                 <div className="relative aspect-square overflow-hidden">
-                  <CmsImage media={m} sizes="96px" sourceWidth={480} alt="" />
+                  {isVideo(m) ? (
+                    <video
+                      src={`${mediaUrl(m)}#t=0.1`}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      aria-hidden="true"
+                      className="absolute inset-0 size-full object-cover"
+                    />
+                  ) : (
+                    <CmsImage media={m} sizes="96px" sourceWidth={480} alt="" />
+                  )}
                 </div>
                 <div className="text-sm">
                   <p className="text-fg">{m.title || m.alt}</p>
                   {m.caption ? <p className="mt-1 text-fg-muted">{m.caption}</p> : null}
                   <p className="mt-2 text-fg-muted">
-                    Photo:{' '}
+                    {isVideo(m) ? 'Video' : 'Photo'}:{' '}
                     {m.sourceUrl ? (
                       <a href={m.sourceUrl} className="text-fg underline underline-offset-4" target="_blank" rel="noopener noreferrer">
                         {m.credit}

@@ -317,6 +317,37 @@ export const MEDIA = [
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Hietaliete_forest_in_snow_with_reindeer_sled.jpg'
   },
+  // Home hero video: an 18-second seamless loop cut from the timelapse below (lakeside shot only, no audio).
+  {
+    key: 'aurora-lake-loop',
+    file: 'video/aurora-lake-loop.mp4',
+    title: 'Aurora over a lake (video loop)',
+    alt: 'Timelapse of green aurora moving over a still lake, reflected in the water and the reeds',
+    caption: 'Lapland',
+    category: 'video',
+    credit: 'Antti Pietikäinen / Harriniva Hotels & Safaris',
+    license: 'CC BY 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Aurora_borealis_timelapse.webm'
+  },
+  {
+    key: 'aurora-lake-loop-mobile',
+    file: 'video/aurora-lake-loop-mobile.mp4',
+    title: 'Aurora over a lake (video loop, mobile)',
+    alt: 'Timelapse of green aurora moving over a still lake, reflected in the water and the reeds',
+    caption: 'Lighter 720p version for phones. Credit: see "Aurora over a lake (video loop)".',
+    category: 'video'
+  },
+  {
+    key: 'aurora-lake-poster',
+    focalX: 50,
+    focalY: 45,
+    file: 'video/aurora-lake-poster.jpg',
+    title: 'Aurora over a lake (video poster)',
+    alt: 'Green aurora over a still lake, reflected in the water and the reeds',
+    caption: 'First frame of the hero video. Credit: see "Aurora over a lake (video loop)".',
+    category: 'aurora'
+  },
   {
     key: 'logo',
     file: 'logo.png',

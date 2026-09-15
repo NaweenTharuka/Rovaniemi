@@ -22,6 +22,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
     "photos:migrate": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/seed/migrate-photos.ts",
+    "video:migrate": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/seed/migrate-hero-video.ts",
     "pages:build": "node scripts/export-github-pages.mjs",
     "pages:deploy": "node scripts/export-github-pages.mjs --deploy"
   },

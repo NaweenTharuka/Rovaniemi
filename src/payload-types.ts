@@ -248,7 +248,14 @@ export interface HeroBlock {
    * Also used as the video poster.
    */
   image?: (number | null) | Media;
+  /**
+   * Short, silent loop (MP4, H.264). Keep it under ~6 MB. Visitors who prefer reduced motion see the image instead.
+   */
   video?: (number | null) | Media;
+  /**
+   * A smaller version (e.g. 720p) so phones load less data. Falls back to the main video.
+   */
+  videoMobile?: (number | null) | Media;
   /**
    * Subtle depth on scroll.
    */
@@ -1904,6 +1911,7 @@ export interface HeroBlockSelect<T extends boolean = true> {
   overlay?: T;
   image?: T;
   video?: T;
+  videoMobile?: T;
   parallax?: T;
   primaryCta?:
     | T

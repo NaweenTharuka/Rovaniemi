@@ -120,7 +120,8 @@ async function migrate() {
   let uploaded = 0
 
   for (const item of MEDIA) {
-    if (item.category === 'brand') continue
+    // Photography only: brand assets come from the seed, the hero video from video:migrate.
+    if (!('credit' in item) || !item.file.startsWith('photos/')) continue
     const found = byTitle.get(item.title)
     if (found) {
       next[item.key] = found.id

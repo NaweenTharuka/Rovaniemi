@@ -19,7 +19,22 @@ export function HeroBlock({ block, isFirst }: { block: HeroBlockData; isFirst: b
   const variant = block.variant ?? 'cinematic'
   const label = parseSectionLabel(block.sectionLabel)
   const video = block.mediaType === 'video' ? asMedia(block.video) : null
+  const videoMobile = block.mediaType === 'video' ? asMedia(block.videoMobile) : null
   const hasMedia = Boolean(asMedia(block.image) || video)
+
+  const background = (
+    <div className="hero-settle absolute inset-0">
+      <CmsImage media={block.image} sizes="100vw" priority={isFirst} sourceWidth={2880} />
+      {video && isVideo(video) && video.url ? (
+        <AmbientVideo
+          src={mediaUrl(video)!}
+          mobileSrc={videoMobile && isVideo(videoMobile) ? mediaUrl(videoMobile) : null}
+          type={video.mimeType ?? undefined}
+          poster={mediaUrl(block.image, 1440)}
+        />
+      ) : null}
+    </div>
+  )
 
   const ctas = (
     <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
@@ -40,21 +55,7 @@ export function HeroBlock({ block, isFirst }: { block: HeroBlockData; isFirst: b
         className="tone-ink grain relative flex min-h-[100svh] flex-col overflow-hidden bg-surface text-fg"
       >
         <div className="absolute inset-0">
-          {block.parallax ? (
-            <Parallax amount={8}>
-              <div className="hero-settle absolute inset-0">
-                <CmsImage media={block.image} sizes="100vw" priority={isFirst} sourceWidth={2880} />
-                {video && isVideo(video) && video.url ? (
-                  <AmbientVideo src={mediaUrl(video)!} type={video.mimeType ?? undefined} poster={mediaUrl(block.image, 1440)} />
-                ) : null}
-              </div>
-            </Parallax>
-          ) : (
-            <div className="hero-settle absolute inset-0">
-              <CmsImage media={block.image} sizes="100vw" priority={isFirst} sourceWidth={2880} />
-              {video?.url ? <AmbientVideo src={mediaUrl(video)!} type={video.mimeType ?? undefined} poster={mediaUrl(block.image, 1440)} /> : null}
-            </div>
-          )}
+          {block.parallax ? <Parallax amount={8}>{background}</Parallax> : background}
           <div aria-hidden="true" className={cn('absolute inset-0 bg-gradient-to-t', OVERLAY[block.overlay ?? 'medium'])} />
           {/* Legibility scrim behind the text block, independent of the photo's brightness. */}
           <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-3/5 bg-[radial-gradient(120%_100%_at_20%_100%,rgb(11_16_22/0.7)_0%,rgb(11_16_22/0)_70%)]" />

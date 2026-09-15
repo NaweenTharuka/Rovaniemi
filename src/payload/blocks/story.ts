@@ -59,7 +59,21 @@ export const HeroBlock: Block = {
       type: 'upload',
       relationTo: 'media',
       filterOptions: { mimeType: { contains: 'video' } },
-      admin: { condition: (_, s) => s?.mediaType === 'video' },
+      admin: {
+        condition: (_, s) => s?.mediaType === 'video',
+        description: 'Short, silent loop (MP4, H.264). Keep it under ~6 MB. Visitors who prefer reduced motion see the image instead.',
+      },
+    },
+    {
+      name: 'videoMobile',
+      label: 'Video for phones (optional)',
+      type: 'upload',
+      relationTo: 'media',
+      filterOptions: { mimeType: { contains: 'video' } },
+      admin: {
+        condition: (_, s) => s?.mediaType === 'video',
+        description: 'A smaller version (e.g. 720p) so phones load less data. Falls back to the main video.',
+      },
     },
     { name: 'parallax', type: 'checkbox', defaultValue: true, admin: { description: 'Subtle depth on scroll.' } },
     linkField({ name: 'primaryCta', label: 'Primary button' }),
