@@ -1,0 +1,4 @@
+:HL["/Rovaniemi/_next/static/chunks/42w4f58rygu16.css","style"]
+:HL["/Rovaniemi/_next/static/media/31a9145ccb84606d-s.p.3j3x29wbycqkn.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/Rovaniemi/_next/static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"(frontend)","param":null,"prefetchHints":4144,"slots":{"children":{"name":"experiences","param":null,"prefetchHints":4160,"slots":{"children":{"name":"slug","param":{"type":"d","key":"korouoma-frozen-waterfall-adventure","siblings":[]},"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}}}}}},"staleTime":300,"buildId":"-Z-tP25QIf8E-YcoPAR_9"}

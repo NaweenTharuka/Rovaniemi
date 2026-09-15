@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /next
+
+Host: https://naweentharuka.github.io/Rovaniemi
+Sitemap: https://naweentharuka.github.io/Rovaniemi/sitemap.xml
