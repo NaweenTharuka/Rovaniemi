@@ -15,12 +15,15 @@ export function AmbientVideo({
   src,
   mobileSrc,
   poster,
+  position,
   className,
   type = 'video/mp4',
 }: {
   src: string
   mobileSrc?: string | null
   poster?: string | null
+  /** CSS object-position, e.g. the poster's focal point, so narrow screens crop to the subject. */
+  position?: string
   className?: string
   type?: string
 }) {
@@ -59,6 +62,7 @@ export function AmbientVideo({
         playing ? 'opacity-100' : 'opacity-0',
         className,
       )}
+      style={position ? { objectPosition: position } : undefined}
       poster={poster ?? undefined}
       muted
       loop

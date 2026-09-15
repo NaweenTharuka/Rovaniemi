@@ -15,9 +15,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { getPayload } from 'payload'
 
-import type { Media } from '@/payload-types'
-
 import { MEDIA } from './content'
+import { idOf, referencedMediaIds } from './refs'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const ASSETS = path.join(dirname, 'assets')
@@ -82,31 +81,6 @@ const EXPERIENCE_RULES: Record<string, { hero: [OldKey, NewKey]; oldGallery: Old
     oldGallery: [],
     gallery: ['levi-gondola', 'aurora-over-levi', 'riisitunturi-crown-snow'],
   },
-}
-
-const UPLOAD_KEYS = new Set([
-  'image', 'backgroundImage', 'poster', 'heroImage', 'heroVideo', 'gallery', 'frames', 'profileImage', 'coverImage',
-  'logo', 'logoLight', 'logoDark', 'favicon', 'appleTouchIcon', 'defaultOgImage', 'video', 'images',
-])
-
-const idOf = (value: unknown): number | null =>
-  typeof value === 'number' ? value : value && typeof value === 'object' && 'id' in value ? Number((value as Media).id) : null
-
-/** Collects every media id referenced through a known upload field. */
-const collectRefs = (node: unknown, refs: Set<number>, key = '') => {
-  if (Array.isArray(node)) {
-    if (UPLOAD_KEYS.has(key)) node.forEach((v) => { const id = idOf(v); if (id) refs.add(id) })
-    else node.forEach((v) => collectRefs(v, refs))
-    return
-  }
-  if (node && typeof node === 'object') {
-    for (const [k, v] of Object.entries(node)) {
-      if (UPLOAD_KEYS.has(k) && !Array.isArray(v)) {
-        const id = idOf(v)
-        if (id) refs.add(id)
-      } else collectRefs(v, refs, k)
-    }
-  }
 }
 
 async function migrate() {
@@ -276,17 +250,7 @@ async function migrate() {
   }
 
   /* ------------------------------------------------ 5. remove old images nobody uses */
-  const refs = new Set<number>()
-  for (const collection of ['pages', 'experiences', 'testimonials', 'journal'] as const) {
-    const [published, drafts] = await Promise.all([
-      payload.find({ collection, depth: 0, limit: 500, overrideAccess: true }),
-      payload.find({ collection, depth: 0, limit: 500, overrideAccess: true, draft: true }),
-    ])
-    ;[...published.docs, ...drafts.docs].forEach((d) => collectRefs(d, refs))
-  }
-  for (const slug of ['site-settings', 'navigation'] as const) {
-    collectRefs(await payload.findGlobal({ slug, depth: 0, overrideAccess: true }), refs)
-  }
+  const refs = await referencedMediaIds(payload)
 
   let removed = 0
   for (const [key, id] of Object.entries(old)) {

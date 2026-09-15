@@ -90,6 +90,7 @@ async function seed() {
         title: item.title,
         alt: item.alt,
         caption: 'caption' in item ? item.caption : undefined,
+        description: 'description' in item ? item.description : undefined,
         credit: 'credit' in item ? item.credit : undefined,
         license: 'license' in item ? item.license : undefined,
         licenseUrl: 'licenseUrl' in item ? item.licenseUrl : undefined,

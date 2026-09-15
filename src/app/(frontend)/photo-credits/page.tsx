@@ -17,6 +17,25 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
+/** Edited videos combine several sources: their description lists every source URL. */
+function SourceLinks({ text }: { text: string }) {
+  const urls = text.match(/https:\/\/[^\s,]+/g) ?? []
+  if (!urls.length) return null
+  return (
+    <p className="mt-1 text-fg-muted">
+      Sources:{' '}
+      {urls.map((url, i) => (
+        <span key={url}>
+          {i ? ', ' : null}
+          <a href={url} className="underline underline-offset-4" target="_blank" rel="noopener noreferrer">
+            {i + 1}
+          </a>
+        </span>
+      ))}
+    </p>
+  )
+}
+
 /**
  * Attribution for every credited image in the media library (required by
  * Creative Commons licences). Generated from the CMS — no manual upkeep.
@@ -67,6 +86,7 @@ export default async function PhotoCreditsPage() {
                       <span className="text-fg">{m.credit}</span>
                     )}
                   </p>
+                  {isVideo(m) && m.description ? <SourceLinks text={m.description} /> : null}
                   {m.license ? (
                     <p className="mt-1 text-fg-muted">
                       Licence:{' '}

@@ -317,36 +317,39 @@ export const MEDIA = [
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Hietaliete_forest_in_snow_with_reindeer_sled.jpg'
   },
-  // Home hero video: an 18-second seamless loop cut from the timelapse below (lakeside shot only, no audio).
+  // Home hero video: a 15-second seamless loop edited from two Wikimedia Commons clips filmed in
+  // Finnish Lapland (trimmed, colour-graded, crossfaded, no audio). The edit is shared under CC BY-SA 3.0.
   {
-    key: 'aurora-lake-loop',
-    file: 'video/aurora-lake-loop.mp4',
-    title: 'Aurora over a lake (video loop)',
-    alt: 'Timelapse of green aurora moving over a still lake, reflected in the water and the reeds',
-    caption: 'Lapland',
+    key: 'lapland-winter-loop',
+    file: 'video/lapland-winter-loop.mp4',
+    title: 'Lapland winter (video loop)',
+    alt: 'A reindeer walking along a sunlit snowy road, aurora above snow-covered spruces, and a reindeer looking into the camera',
+    caption: 'Inari and Saariselkä, Finnish Lapland. Edited from “Rangifer tarandus – Inari 2013” by Manfred Werner – Tsui (CC BY-SA 3.0) and “Luces del Norte – Auroras Boreales Saariselkä” by El Coleccionista de Instantes (CC BY-SA 2.0).',
+    description:
+      'Sources: https://commons.wikimedia.org/wiki/File:Rangifer_tarandus_-_Inari_2013.ogv , https://commons.wikimedia.org/wiki/File:Video_Luces_del_Norte_Auroras_Boreales_Laponia_Saariselka.webm',
     category: 'video',
-    credit: 'Antti Pietikäinen / Harriniva Hotels & Safaris',
-    license: 'CC BY 3.0',
-    licenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
-    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Aurora_borealis_timelapse.webm'
+    credit: 'Manfred Werner – Tsui; El Coleccionista de Instantes',
+    license: 'CC BY-SA 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Rangifer_tarandus_-_Inari_2013.ogv'
   },
   {
-    key: 'aurora-lake-loop-mobile',
-    file: 'video/aurora-lake-loop-mobile.mp4',
-    title: 'Aurora over a lake (video loop, mobile)',
-    alt: 'Timelapse of green aurora moving over a still lake, reflected in the water and the reeds',
-    caption: 'Lighter 720p version for phones. Credit: see "Aurora over a lake (video loop)".',
+    key: 'lapland-winter-loop-mobile',
+    file: 'video/lapland-winter-loop-mobile.mp4',
+    title: 'Lapland winter (video loop, mobile)',
+    alt: 'A reindeer walking along a sunlit snowy road, aurora above snow-covered spruces, and a reindeer looking into the camera',
+    caption: 'Lighter 720p version for phones. Credit: see “Lapland winter (video loop)”.',
     category: 'video'
   },
   {
-    key: 'aurora-lake-poster',
-    focalX: 50,
-    focalY: 45,
-    file: 'video/aurora-lake-poster.jpg',
-    title: 'Aurora over a lake (video poster)',
-    alt: 'Green aurora over a still lake, reflected in the water and the reeds',
-    caption: 'First frame of the hero video. Credit: see "Aurora over a lake (video loop)".',
-    category: 'aurora'
+    key: 'lapland-winter-poster',
+    focalX: 44,
+    focalY: 55,
+    file: 'video/lapland-winter-poster.jpg',
+    title: 'Lapland winter (video poster)',
+    alt: 'A reindeer walking towards the camera along a sunlit snowy road between pine trees',
+    caption: 'First frame of the hero video. Credit: see “Lapland winter (video loop)”.',
+    category: 'wildlife'
   },
   {
     key: 'logo',

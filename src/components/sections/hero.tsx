@@ -5,7 +5,7 @@ import { CmsImage } from '@/components/media/cms-image'
 import { CmsLink } from '@/components/ui/cms-link'
 import { Magnetic } from '@/components/animations/magnetic'
 import { parseSectionLabel, SectionLabel } from '@/components/ui/primitives'
-import { asMedia, isVideo, mediaUrl } from '@/lib/media'
+import { asMedia, focalPosition, isVideo, mediaUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import type { HeroBlock as HeroBlockData } from '@/payload-types'
 
@@ -31,6 +31,7 @@ export function HeroBlock({ block, isFirst }: { block: HeroBlockData; isFirst: b
           mobileSrc={videoMobile && isVideo(videoMobile) ? mediaUrl(videoMobile) : null}
           type={video.mimeType ?? undefined}
           poster={mediaUrl(block.image, 1440)}
+          position={focalPosition(block.image)}
         />
       ) : null}
     </div>
