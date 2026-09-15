@@ -67,35 +67,73 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
+    pages: Page;
+    experiences: Experience;
+    faqs: Faq;
+    'faq-categories': FaqCategory;
+    testimonials: Testimonial;
+    journal: Journal;
     media: Media;
+    'contact-submissions': ContactSubmission;
+    users: User;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
+    'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    experiences: {
+      faqs: 'faqs';
+      testimonials: 'testimonials';
+    };
+    'payload-folders': {
+      documentsAndFolders: 'payload-folders' | 'media';
+    };
+  };
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    experiences: ExperiencesSelect<false> | ExperiencesSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
+    'faq-categories': FaqCategoriesSelect<false> | FaqCategoriesSelect<true>;
+    testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
+    journal: JournalSelect<false> | JournalSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
+    'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    navigation: Navigation;
+    'site-settings': SiteSetting;
+  };
+  globalsSelect: {
+    navigation: NavigationSelect<false> | NavigationSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
   };
   user: User;
   jobs: {
-    tasks: unknown;
+    tasks: {
+      schedulePublish: TaskSchedulePublish;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -118,11 +156,576 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Pages are built from designed sections. Use Live Preview to see changes before publishing.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  /**
+   * Add, reorder (drag), duplicate (row menu) or hide sections. Every section is a designed component.
+   */
+  layout?:
+    | (
+        | HeroBlock
+        | ChaptersBlock
+        | CinematicSequenceBlock
+        | ExperienceShowcaseBlock
+        | ImageTextBlock
+        | SplitBlock
+        | FullBleedImageBlock
+        | StatsBlock
+        | TestimonialsBlock
+        | FaqBlock
+        | GalleryBlock
+        | ImageGridBlock
+        | TimelineBlock
+        | QuoteBlock
+        | RichTextBlock
+        | CtaBlock
+        | ContactFormBlock
+        | NewsletterBlock
+      )[]
+    | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    /**
+     * Social share title. Falls back to the SEO title.
+     */
+    ogTitle?: string | null;
+    /**
+     * Social share description. Falls back to the meta description.
+     */
+    ogDescription?: string | null;
+    twitterCard?: ('summary_large_image' | 'summary') | null;
+    /**
+     * Only set when this content is duplicated elsewhere. Absolute URL.
+     */
+    canonicalUrl?: string | null;
+    noIndex?: boolean | null;
+  };
+  /**
+   * Use "home" for the homepage. Core pages (home, about, faq, contact…) keep their slug.
+   */
+  slug: string;
+  template?: ('default' | 'legal') | null;
+  /**
+   * Short name for breadcrumbs.
+   */
+  breadcrumbLabel?: string | null;
+  /**
+   * Draft → In review → Published. "Archived" keeps the document but hides it from the website.
+   */
+  workflowStatus?: ('draft' | 'review' | 'published' | 'archived') | null;
+  createdBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock".
+ */
+export interface HeroBlock {
+  variant?: ('cinematic' | 'editorial' | 'compact') | null;
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading: string;
+  subheading?: string | null;
+  mediaType?: ('image' | 'video') | null;
+  overlay?: ('light' | 'medium' | 'strong') | null;
+  /**
+   * Also used as the video poster.
+   */
+  image?: (number | null) | Media;
+  video?: (number | null) | Media;
+  /**
+   * Subtle depth on scroll.
+   */
+  parallax?: boolean | null;
+  primaryCta?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+  };
+  secondaryCta?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+  };
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'hero';
+}
+/**
+ * Images are converted to WebP in several sizes automatically. Alt text is required.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  /**
+   * Internal name for finding this file.
+   */
+  title?: string | null;
+  /**
+   * Describe what the image shows for people using screen readers. Write "decorative" only for purely decorative images.
+   */
+  alt: string;
+  caption?: string | null;
+  description?: string | null;
+  /**
+   * Photographer or source, e.g. "Ninara". Mark AI-generated imagery honestly.
+   */
+  credit?: string | null;
+  license?: string | null;
+  licenseUrl?: string | null;
+  /**
+   * Original photo page.
+   */
+  sourceUrl?: string | null;
+  category?: ('landscape' | 'aurora' | 'wildlife' | 'people' | 'vehicles' | 'brand' | 'video' | 'other') | null;
+  featured?: boolean | null;
+  folder?: (number | null) | FolderInterface;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    tablet?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    desktop?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    og?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders".
+ */
+export interface FolderInterface {
+  id: number;
+  name: string;
+  folder?: (number | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+      | {
+          relationTo?: 'payload-folders';
+          value: number | FolderInterface;
+        }
+      | {
+          relationTo?: 'media';
+          value: number | Media;
+        }
+    )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  folderType?: 'media'[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Tours and journeys. Drag rows to change the order used across the website.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experiences".
+ */
+export interface Experience {
+  id: number;
+  _order?: string | null;
+  title: string;
+  /**
+   * Used in navigation and compact lists, e.g. "Korouoma".
+   */
+  shortTitle?: string | null;
+  /**
+   * Small label above the title, e.g. "Northern Lights".
+   */
+  eyebrow?: string | null;
+  /**
+   * Short tags used for filtering, e.g. Northern Lights, Wildlife, Day trip. Press Enter after each.
+   */
+  categories?: string[] | null;
+  /**
+   * One editorial line for showcases, e.g. "Frozen waterfalls. Arctic silence."
+   */
+  tagline?: string | null;
+  /**
+   * Shown on cards, listings and as the search description fallback.
+   */
+  shortDescription: string;
+  /**
+   * The opening paragraphs of the experience page.
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional long-form editorial section. Hidden if empty.
+   */
+  story?: {
+    heading?: string | null;
+    body?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    image?: (number | null) | Media;
+  };
+  highlights?:
+    | {
+        title: string;
+        text?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  heroImage: number | Media;
+  /**
+   * Optional ambient loop (MP4/WebM, muted). The hero image is used as its poster.
+   */
+  heroVideo?: (number | null) | Media;
+  /**
+   * Drag to reorder.
+   */
+  gallery?: (number | Media)[] | null;
+  duration?: string | null;
+  groupSize?: string | null;
+  difficulty?: ('easy' | 'moderate' | 'challenging') | null;
+  location?: string | null;
+  startingPoint?: string | null;
+  season?: {
+    label?: string | null;
+    months?: ('jan' | 'feb' | 'mar' | 'apr' | 'may' | 'jun' | 'jul' | 'aug' | 'sep' | 'oct' | 'nov' | 'dec')[] | null;
+    availabilityText?: string | null;
+  };
+  pricing?: {
+    fromPrice?: number | null;
+    unit?: ('person' | 'group') | null;
+    /**
+     * Overrides the generated label, e.g. "One-way from €250 per group".
+     */
+    displayLabel?: string | null;
+    /**
+     * Shown under the price, e.g. what the price covers.
+     */
+    note?: string | null;
+  };
+  /**
+   * Use when one experience has several routes or packages (e.g. Levi one-way vs. day trip).
+   */
+  options?:
+    | {
+        title: string;
+        description?: string | null;
+        price?: number | null;
+        unit?: ('person' | 'group') | null;
+        capacity?: string | null;
+        duration?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Approximate flow of the experience. Hidden on the website if empty.
+   */
+  itinerary?:
+    | {
+        time?: string | null;
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  included?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  notIncluded?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  whatToBring?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  pickup?: {
+    summary?: string | null;
+    details?: string | null;
+  };
+  notices?:
+    | {
+        title: string;
+        body: string;
+        tone?: ('info' | 'important') | null;
+        id?: string | null;
+      }[]
+    | null;
+  booking?: {
+    /**
+     * Defaults to the site-wide booking label.
+     */
+    label?: string | null;
+    /**
+     * Leave empty to send guests to the enquiry form with this experience preselected.
+     */
+    url?: string | null;
+    ctaHeading?: string | null;
+    ctaBody?: string | null;
+  };
+  /**
+   * FAQs linked to this experience. Link them from the FAQ itself.
+   */
+  faqs?: {
+    docs?: (number | Faq)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  testimonials?: {
+    docs?: (number | Testimonial)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Leave empty to show other featured experiences automatically.
+   */
+  relatedExperiences?: (number | Experience)[] | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    /**
+     * Social share title. Falls back to the SEO title.
+     */
+    ogTitle?: string | null;
+    /**
+     * Social share description. Falls back to the meta description.
+     */
+    ogDescription?: string | null;
+    twitterCard?: ('summary_large_image' | 'summary') | null;
+    /**
+     * Only set when this content is duplicated elsewhere. Absolute URL.
+     */
+    canonicalUrl?: string | null;
+    noIndex?: boolean | null;
+  };
+  /**
+   * URL segment. Generated from the title if left empty. Changing it changes the public URL.
+   */
+  slug: string;
+  /**
+   * Featured experiences appear first in showcases.
+   */
+  featured?: boolean | null;
+  /**
+   * Draft → In review → Published. "Archived" keeps the document but hides it from the website.
+   */
+  workflowStatus?: ('draft' | 'review' | 'published' | 'archived') | null;
+  createdBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Questions shown on the FAQ page, experience pages and FAQ blocks. Drag to reorder.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: number;
+  _order?: string | null;
+  question: string;
+  answer: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  category: number | FaqCategory;
+  /**
+   * Shows this question on those experience pages.
+   */
+  experiences?: (number | Experience)[] | null;
+  /**
+   * Anchor used for deep links, e.g. /faq#pickup-and-drop-off.
+   */
+  slug: string;
+  /**
+   * Featured questions appear in FAQ highlight blocks.
+   */
+  featured?: boolean | null;
+  /**
+   * Draft → In review → Published. "Archived" keeps the document but hides it from the website.
+   */
+  workflowStatus?: ('draft' | 'review' | 'published' | 'archived') | null;
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Filters shown on the FAQ page. Drag to reorder.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faq-categories".
+ */
+export interface FaqCategory {
+  id: number;
+  _order?: string | null;
+  title: string;
+  /**
+   * URL segment. Generated from the title if left empty. Changing it changes the public URL.
+   */
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  name: string;
+  /**
+   * Admin: everything. Editor: all content, no users or site settings. Author: own drafts only.
+   */
+  role: 'admin' | 'editor' | 'author';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -143,30 +746,909 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Only publish genuine guest feedback you have permission to share. Drag to reorder.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
+ * via the `definition` "testimonials".
  */
-export interface Media {
-  id: string;
-  alt: string;
+export interface Testimonial {
+  id: number;
+  _order?: string | null;
+  customerName: string;
+  customerLocation?: string | null;
+  /**
+   * Optional short pull-quote shown large, e.g. "An unforgettable night in the Arctic."
+   */
+  headline?: string | null;
+  quote: string;
+  /**
+   * 1–5. Leave empty to hide stars.
+   */
+  rating?: number | null;
+  experience?: (number | null) | Experience;
+  date?: string | null;
+  /**
+   * Where this review was given (e.g. Google, TripAdvisor, email). Internal.
+   */
+  source?: string | null;
+  profileImage?: (number | null) | Media;
+  featured?: boolean | null;
+  /**
+   * Draft → In review → Published. "Archived" keeps the document but hides it from the website.
+   */
+  workflowStatus?: ('draft' | 'review' | 'published' | 'archived') | null;
+  createdBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ChaptersBlock".
+ */
+export interface ChaptersBlock {
+  /**
+   * Optional line shown before the first chapter.
+   */
+  intro?: string | null;
+  chapters?:
+    | {
+        label?: string | null;
+        title: string;
+        body?: string | null;
+        image: number | Media;
+        /**
+         * Small facts that reveal progressively, e.g. "66°N — Arctic Circle".
+         */
+        details?:
+          | {
+              value: string;
+              label: string;
+              id?: string | null;
+            }[]
+          | null;
+        cta?: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'experiences';
+                value: number | Experience;
+              } | null);
+          url?: string | null;
+          label?: string | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'chapters';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CinematicSequenceBlock".
+ */
+export interface CinematicSequenceBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  body?: string | null;
+  source?: ('path' | 'media') | null;
+  /**
+   * Path with {index} placeholder. Frames live in /public or a CDN.
+   */
+  framePattern?: string | null;
+  frameCount?: number | null;
+  indexPadding?: number | null;
+  startIndex?: number | null;
+  /**
+   * Optional lighter frame set for phones.
+   */
+  mobileFramePattern?: string | null;
+  mobileFrameCount?: number | null;
+  /**
+   * In playback order.
+   */
+  frames?: (number | Media)[] | null;
+  /**
+   * Shown instantly, on slow connections and for reduced-motion visitors.
+   */
+  poster: number | Media;
+  /**
+   * Text that appears at a point in the sequence (0–100%).
+   */
+  captions?:
+    | {
+        at: number;
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  scrollLength?: ('short' | 'medium' | 'long') | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cinematicSequence';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ExperienceShowcaseBlock".
+ */
+export interface ExperienceShowcaseBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  intro?: string | null;
+  source?: ('all' | 'featured' | 'manual') | null;
+  layout?: ('index' | 'horizontal' | 'stacked') | null;
+  /**
+   * Drag to set the order.
+   */
+  experiences?: (number | Experience)[] | null;
+  /**
+   * Filter chips built from experience categories. Shown only when there are at least two categories.
+   */
+  showFilters?: boolean | null;
+  cta?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+  };
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'experienceShowcase';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageTextBlock".
+ */
+export interface ImageTextBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  image: number | Media;
+  imagePosition?: ('right' | 'left') | null;
+  imageRatio?: ('portrait' | 'landscape' | 'square') | null;
+  cta?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+  };
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'imageText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitBlock".
+ */
+export interface SplitBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional numbered points, e.g. principles.
+   */
+  items?:
+    | {
+        title: string;
+        text?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  cta?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+  };
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'split';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FullBleedImageBlock".
+ */
+export interface FullBleedImageBlock {
+  image: number | Media;
+  caption?: string | null;
+  overlayText?: string | null;
+  height?: ('screen' | 'tall' | 'cinema') | null;
+  parallax?: boolean | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'fullBleedImage';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StatsBlock".
+ */
+export interface StatsBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  items?:
+    | {
+        value: string;
+        label: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'stats';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock".
+ */
+export interface TestimonialsBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  style?: ('editorial' | 'carousel' | 'minimal') | null;
+  source?: ('featured' | 'all' | 'experience' | 'manual') | null;
+  limit?: number | null;
+  experience?: (number | null) | Experience;
+  testimonials?: (number | Testimonial)[] | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonials';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FaqBlock".
+ */
+export interface FaqBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  intro?: string | null;
+  source?: ('all' | 'featured' | 'categories' | 'manual') | null;
+  /**
+   * Empty = no limit.
+   */
+  limit?: number | null;
+  categories?: (number | FaqCategory)[] | null;
+  faqs?: (number | Faq)[] | null;
+  enableSearch?: boolean | null;
+  enableFilters?: boolean | null;
+  cta?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+  };
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'faq';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock".
+ */
+export interface GalleryBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  images: (number | Media)[];
+  layout?: ('editorial' | 'strip') | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageGridBlock".
+ */
+export interface ImageGridBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  items?:
+    | {
+        image: number | Media;
+        title: string;
+        text?: string | null;
+        link?: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'experiences';
+                value: number | Experience;
+              } | null);
+          url?: string | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'imageGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TimelineBlock".
+ */
+export interface TimelineBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  items?:
+    | {
+        marker?: string | null;
+        title: string;
+        body?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'timeline';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "QuoteBlock".
+ */
+export interface QuoteBlock {
+  quote: string;
+  attribution?: string | null;
+  role?: string | null;
+  image?: (number | null) | Media;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'quote';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock".
+ */
+export interface RichTextBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  width?: ('reading' | 'wide') | null;
+  /**
+   * For legal and long pages. Built from H2 headings.
+   */
+  tableOfContents?: boolean | null;
+  lastUpdated?: string | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'richText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CtaBlock".
+ */
+export interface CtaBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading: string;
+  body?: string | null;
+  primaryCta?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+  };
+  secondaryCta?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+  };
+  /**
+   * Optional. Dark tone is applied automatically over images.
+   */
+  backgroundImage?: (number | null) | Media;
+  /**
+   * Uses the WhatsApp number from Site Settings.
+   */
+  showWhatsApp?: boolean | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactFormBlock".
+ */
+export interface ContactFormBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  intro?: string | null;
+  formHeading?: string | null;
+  submitLabel?: string | null;
+  successMessage?: string | null;
+  showDirectContacts?: boolean | null;
+  showMap?: boolean | null;
+  /**
+   * Short pickup explanation shown next to the contact details.
+   */
+  pickupNote?: string | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'contactForm';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterBlock".
+ */
+export interface NewsletterBlock {
+  eyebrow?: string | null;
+  /**
+   * Line breaks are kept. Keep headlines short.
+   */
+  heading?: string | null;
+  body?: string | null;
+  /**
+   * Signup URL from your email provider (e.g. Mailchimp/Brevo form action). The section stays hidden until this is set.
+   */
+  formAction?: string | null;
+  emailFieldName?: string | null;
+  buttonLabel?: string | null;
+  disclaimer?: string | null;
+  /**
+   * Keeps the section in the page but does not show it on the website.
+   */
+  hidden?: boolean | null;
+  tone?: ('snow' | 'ink') | null;
+  /**
+   * Optional, for links like /about#safety.
+   */
+  anchorId?: string | null;
+  /**
+   * Small editorial label shown at the top of the section, e.g. "01 — The North".
+   */
+  sectionLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'newsletter';
+}
+/**
+ * Stories and guides. The journal appears on the site once an entry is published.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "journal".
+ */
+export interface Journal {
+  id: number;
+  title: string;
+  excerpt?: string | null;
+  coverImage?: (number | null) | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  relatedExperiences?: (number | Experience)[] | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    /**
+     * Social share title. Falls back to the SEO title.
+     */
+    ogTitle?: string | null;
+    /**
+     * Social share description. Falls back to the meta description.
+     */
+    ogDescription?: string | null;
+    twitterCard?: ('summary_large_image' | 'summary') | null;
+    /**
+     * Only set when this content is duplicated elsewhere. Absolute URL.
+     */
+    canonicalUrl?: string | null;
+    noIndex?: boolean | null;
+  };
+  /**
+   * URL segment. Generated from the title if left empty. Changing it changes the public URL.
+   */
+  slug: string;
+  authorName?: string | null;
+  /**
+   * Draft → In review → Published. "Archived" keeps the document but hides it from the website.
+   */
+  workflowStatus?: ('draft' | 'review' | 'published' | 'archived') | null;
+  createdBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Messages sent through the website contact form.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions".
+ */
+export interface ContactSubmission {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  guests?: number | null;
+  experience?: (number | null) | Experience;
+  experienceLabel?: string | null;
+  preferredDate?: string | null;
+  message?: string | null;
+  consent?: boolean | null;
+  pageUrl?: string | null;
+  status: 'new' | 'in-progress' | 'responded' | 'closed';
+  /**
+   * Private notes for the team.
+   */
+  internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -180,23 +1662,147 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'schedulePublish') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: string | User;
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'experiences';
+        value: number | Experience;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: number | Faq;
+      } | null)
+    | ({
+        relationTo: 'faq-categories';
+        value: number | FaqCategory;
+      } | null)
+    | ({
+        relationTo: 'testimonials';
+        value: number | Testimonial;
+      } | null)
+    | ({
+        relationTo: 'journal';
+        value: number | Journal;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'contact-submissions';
+        value: number | ContactSubmission;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-folders';
+        value: number | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -206,10 +1812,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -229,7 +1835,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -237,9 +1843,848 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  layout?:
+    | T
+    | {
+        hero?: T | HeroBlockSelect<T>;
+        chapters?: T | ChaptersBlockSelect<T>;
+        cinematicSequence?: T | CinematicSequenceBlockSelect<T>;
+        experienceShowcase?: T | ExperienceShowcaseBlockSelect<T>;
+        imageText?: T | ImageTextBlockSelect<T>;
+        split?: T | SplitBlockSelect<T>;
+        fullBleedImage?: T | FullBleedImageBlockSelect<T>;
+        stats?: T | StatsBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        gallery?: T | GalleryBlockSelect<T>;
+        imageGrid?: T | ImageGridBlockSelect<T>;
+        timeline?: T | TimelineBlockSelect<T>;
+        quote?: T | QuoteBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
+        cta?: T | CtaBlockSelect<T>;
+        contactForm?: T | ContactFormBlockSelect<T>;
+        newsletter?: T | NewsletterBlockSelect<T>;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterCard?: T;
+        canonicalUrl?: T;
+        noIndex?: T;
+      };
+  slug?: T;
+  template?: T;
+  breadcrumbLabel?: T;
+  workflowStatus?: T;
+  createdBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock_select".
+ */
+export interface HeroBlockSelect<T extends boolean = true> {
+  variant?: T;
+  eyebrow?: T;
+  heading?: T;
+  subheading?: T;
+  mediaType?: T;
+  overlay?: T;
+  image?: T;
+  video?: T;
+  parallax?: T;
+  primaryCta?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+      };
+  secondaryCta?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+      };
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ChaptersBlock_select".
+ */
+export interface ChaptersBlockSelect<T extends boolean = true> {
+  intro?: T;
+  chapters?:
+    | T
+    | {
+        label?: T;
+        title?: T;
+        body?: T;
+        image?: T;
+        details?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              id?: T;
+            };
+        cta?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+              label?: T;
+            };
+        id?: T;
+      };
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CinematicSequenceBlock_select".
+ */
+export interface CinematicSequenceBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  source?: T;
+  framePattern?: T;
+  frameCount?: T;
+  indexPadding?: T;
+  startIndex?: T;
+  mobileFramePattern?: T;
+  mobileFrameCount?: T;
+  frames?: T;
+  poster?: T;
+  captions?:
+    | T
+    | {
+        at?: T;
+        text?: T;
+        id?: T;
+      };
+  scrollLength?: T;
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ExperienceShowcaseBlock_select".
+ */
+export interface ExperienceShowcaseBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  intro?: T;
+  source?: T;
+  layout?: T;
+  experiences?: T;
+  showFilters?: T;
+  cta?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+      };
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageTextBlock_select".
+ */
+export interface ImageTextBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  image?: T;
+  imagePosition?: T;
+  imageRatio?: T;
+  cta?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+      };
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitBlock_select".
+ */
+export interface SplitBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  items?:
+    | T
+    | {
+        title?: T;
+        text?: T;
+        id?: T;
+      };
+  cta?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+      };
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FullBleedImageBlock_select".
+ */
+export interface FullBleedImageBlockSelect<T extends boolean = true> {
+  image?: T;
+  caption?: T;
+  overlayText?: T;
+  height?: T;
+  parallax?: T;
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StatsBlock_select".
+ */
+export interface StatsBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        description?: T;
+        id?: T;
+      };
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock_select".
+ */
+export interface TestimonialsBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  style?: T;
+  source?: T;
+  limit?: T;
+  experience?: T;
+  testimonials?: T;
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FaqBlock_select".
+ */
+export interface FaqBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  intro?: T;
+  source?: T;
+  limit?: T;
+  categories?: T;
+  faqs?: T;
+  enableSearch?: T;
+  enableFilters?: T;
+  cta?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+      };
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock_select".
+ */
+export interface GalleryBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  images?: T;
+  layout?: T;
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageGridBlock_select".
+ */
+export interface ImageGridBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        image?: T;
+        title?: T;
+        text?: T;
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+            };
+        id?: T;
+      };
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TimelineBlock_select".
+ */
+export interface TimelineBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        marker?: T;
+        title?: T;
+        body?: T;
+        id?: T;
+      };
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "QuoteBlock_select".
+ */
+export interface QuoteBlockSelect<T extends boolean = true> {
+  quote?: T;
+  attribution?: T;
+  role?: T;
+  image?: T;
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock_select".
+ */
+export interface RichTextBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  content?: T;
+  width?: T;
+  tableOfContents?: T;
+  lastUpdated?: T;
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CtaBlock_select".
+ */
+export interface CtaBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  primaryCta?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+      };
+  secondaryCta?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+      };
+  backgroundImage?: T;
+  showWhatsApp?: T;
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactFormBlock_select".
+ */
+export interface ContactFormBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  intro?: T;
+  formHeading?: T;
+  submitLabel?: T;
+  successMessage?: T;
+  showDirectContacts?: T;
+  showMap?: T;
+  pickupNote?: T;
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterBlock_select".
+ */
+export interface NewsletterBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  formAction?: T;
+  emailFieldName?: T;
+  buttonLabel?: T;
+  disclaimer?: T;
+  hidden?: T;
+  tone?: T;
+  anchorId?: T;
+  sectionLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experiences_select".
+ */
+export interface ExperiencesSelect<T extends boolean = true> {
+  _order?: T;
+  title?: T;
+  shortTitle?: T;
+  eyebrow?: T;
+  categories?: T;
+  tagline?: T;
+  shortDescription?: T;
+  description?: T;
+  story?:
+    | T
+    | {
+        heading?: T;
+        body?: T;
+        image?: T;
+      };
+  highlights?:
+    | T
+    | {
+        title?: T;
+        text?: T;
+        id?: T;
+      };
+  heroImage?: T;
+  heroVideo?: T;
+  gallery?: T;
+  duration?: T;
+  groupSize?: T;
+  difficulty?: T;
+  location?: T;
+  startingPoint?: T;
+  season?:
+    | T
+    | {
+        label?: T;
+        months?: T;
+        availabilityText?: T;
+      };
+  pricing?:
+    | T
+    | {
+        fromPrice?: T;
+        unit?: T;
+        displayLabel?: T;
+        note?: T;
+      };
+  options?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        price?: T;
+        unit?: T;
+        capacity?: T;
+        duration?: T;
+        id?: T;
+      };
+  itinerary?:
+    | T
+    | {
+        time?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  included?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  notIncluded?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  whatToBring?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  pickup?:
+    | T
+    | {
+        summary?: T;
+        details?: T;
+      };
+  notices?:
+    | T
+    | {
+        title?: T;
+        body?: T;
+        tone?: T;
+        id?: T;
+      };
+  booking?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        ctaHeading?: T;
+        ctaBody?: T;
+      };
+  faqs?: T;
+  testimonials?: T;
+  relatedExperiences?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterCard?: T;
+        canonicalUrl?: T;
+        noIndex?: T;
+      };
+  slug?: T;
+  featured?: T;
+  workflowStatus?: T;
+  createdBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  _order?: T;
+  question?: T;
+  answer?: T;
+  category?: T;
+  experiences?: T;
+  slug?: T;
+  featured?: T;
+  workflowStatus?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faq-categories_select".
+ */
+export interface FaqCategoriesSelect<T extends boolean = true> {
+  _order?: T;
+  title?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials_select".
+ */
+export interface TestimonialsSelect<T extends boolean = true> {
+  _order?: T;
+  customerName?: T;
+  customerLocation?: T;
+  headline?: T;
+  quote?: T;
+  rating?: T;
+  experience?: T;
+  date?: T;
+  source?: T;
+  profileImage?: T;
+  featured?: T;
+  workflowStatus?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "journal_select".
+ */
+export interface JournalSelect<T extends boolean = true> {
+  title?: T;
+  excerpt?: T;
+  coverImage?: T;
+  content?: T;
+  relatedExperiences?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterCard?: T;
+        canonicalUrl?: T;
+        noIndex?: T;
+      };
+  slug?: T;
+  authorName?: T;
+  workflowStatus?: T;
+  createdBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  title?: T;
+  alt?: T;
+  caption?: T;
+  description?: T;
+  credit?: T;
+  license?: T;
+  licenseUrl?: T;
+  sourceUrl?: T;
+  category?: T;
+  featured?: T;
+  folder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        tablet?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        desktop?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        hero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        og?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions_select".
+ */
+export interface ContactSubmissionsSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  phone?: T;
+  guests?: T;
+  experience?: T;
+  experienceLabel?: T;
+  preferredDate?: T;
+  message?: T;
+  consent?: T;
+  pageUrl?: T;
+  status?: T;
+  internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -259,29 +2704,54 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
- */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders_select".
+ */
+export interface PayloadFoldersSelect<T extends boolean = true> {
+  name?: T;
+  folder?: T;
+  documentsAndFolders?: T;
+  folderType?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -316,6 +2786,435 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Header menu, booking button and footer links.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation".
+ */
+export interface Navigation {
+  id: number;
+  header?: {
+    /**
+     * Logo files are managed in Site Settings → Branding.
+     */
+    logoVariant?: ('auto' | 'light' | 'dark' | 'text') | null;
+    /**
+     * Drag to reorder. Keep the menu short — four or five items is ideal.
+     */
+    items?:
+      | {
+          link: {
+            type?: ('reference' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'experiences';
+                  value: number | Experience;
+                } | null);
+            url?: string | null;
+            label: string;
+          };
+          hidden?: boolean | null;
+          children?:
+            | {
+                link: {
+                  type?: ('reference' | 'custom') | null;
+                  newTab?: boolean | null;
+                  reference?:
+                    | ({
+                        relationTo: 'pages';
+                        value: number | Page;
+                      } | null)
+                    | ({
+                        relationTo: 'experiences';
+                        value: number | Experience;
+                      } | null);
+                  url?: string | null;
+                  label: string;
+                };
+                description?: string | null;
+                hidden?: boolean | null;
+                id?: string | null;
+              }[]
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+    cta?: {
+      enabled?: boolean | null;
+      link?: {
+        type?: ('reference' | 'custom') | null;
+        newTab?: boolean | null;
+        reference?:
+          | ({
+              relationTo: 'pages';
+              value: number | Page;
+            } | null)
+          | ({
+              relationTo: 'experiences';
+              value: number | Experience;
+            } | null);
+        url?: string | null;
+        label?: string | null;
+      };
+    };
+  };
+  footer?: {
+    columns?:
+      | {
+          title: string;
+          links?:
+            | {
+                link: {
+                  type?: ('reference' | 'custom') | null;
+                  newTab?: boolean | null;
+                  reference?:
+                    | ({
+                        relationTo: 'pages';
+                        value: number | Page;
+                      } | null)
+                    | ({
+                        relationTo: 'experiences';
+                        value: number | Experience;
+                      } | null);
+                  url?: string | null;
+                  label: string;
+                };
+                hidden?: boolean | null;
+                id?: string | null;
+              }[]
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+    finalCta?: {
+      heading?: string | null;
+      link?: {
+        type?: ('reference' | 'custom') | null;
+        newTab?: boolean | null;
+        reference?:
+          | ({
+              relationTo: 'pages';
+              value: number | Page;
+            } | null)
+          | ({
+              relationTo: 'experiences';
+              value: number | Experience;
+            } | null);
+        url?: string | null;
+        label?: string | null;
+      };
+    };
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Brand, theme, contact details, SEO defaults and analytics. Admins only.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  branding: {
+    brandName: string;
+    tagline?: string | null;
+    logo?: (number | null) | Media;
+    logoLight?: (number | null) | Media;
+    logoDark?: (number | null) | Media;
+    /**
+     * Square PNG/SVG, at least 512×512.
+     */
+    favicon?: (number | null) | Media;
+    /**
+     * 180×180 PNG.
+     */
+    appleTouchIcon?: (number | null) | Media;
+  };
+  theme?: {
+    /**
+     * Dark surfaces, primary buttons.
+     */
+    primary?: string | null;
+    /**
+     * Secondary text on dark surfaces.
+     */
+    secondary?: string | null;
+    /**
+     * Signals on dark surfaces only.
+     */
+    accent?: string | null;
+    /**
+     * Light surfaces.
+     */
+    background?: string | null;
+    /**
+     * Body text on light surfaces.
+     */
+    text?: string | null;
+  };
+  contact?: {
+    email?: string | null;
+    whatsapp?: string | null;
+    /**
+     * Leave empty if phone calls are not offered.
+     */
+    phone?: string | null;
+    location?: string | null;
+    address?: string | null;
+    businessId?: string | null;
+    googleMapsUrl?: string | null;
+    /**
+     * Place shown in the contact map, e.g. "Rovaniemi, Finland".
+     */
+    mapQuery?: string | null;
+    /**
+     * Site-wide pickup explanation used on the contact page and in the footer.
+     */
+    pickupSummary?: string | null;
+    /**
+     * Shown in the footer and contact page. Hidden when empty.
+     */
+    socialLinks?:
+      | {
+          platform: 'instagram' | 'facebook' | 'tiktok' | 'youtube' | 'tripadvisor' | 'google' | 'x' | 'linkedin';
+          url: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  booking?: {
+    bookLabel?: string | null;
+    /**
+     * Site path or external booking system. Experiences can override it.
+     */
+    bookUrl?: string | null;
+    enquiryLabel?: string | null;
+    enquiryUrl?: string | null;
+    contactLabel?: string | null;
+    whatsappLabel?: string | null;
+    mobileBookingBar?: boolean | null;
+  };
+  seo?: {
+    /**
+     * Production URL, e.g. https://headingnorth.fi. NEXT_PUBLIC_SERVER_URL overrides this.
+     */
+    siteUrl?: string | null;
+    defaultTitle?: string | null;
+    /**
+     * %s is replaced by the page title.
+     */
+    titleTemplate?: string | null;
+    defaultDescription?: string | null;
+    defaultOgImage?: (number | null) | Media;
+    googleVerification?: string | null;
+    noIndexSite?: boolean | null;
+  };
+  analytics?: {
+    gaMeasurementId?: string | null;
+    gtmId?: string | null;
+    metaPixelId?: string | null;
+    consentText?: string | null;
+  };
+  footer?: {
+    statement?: string | null;
+    /**
+     * {year} is replaced with the current year.
+     */
+    copyright?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation_select".
+ */
+export interface NavigationSelect<T extends boolean = true> {
+  header?:
+    | T
+    | {
+        logoVariant?: T;
+        items?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                  };
+              hidden?: T;
+              children?:
+                | T
+                | {
+                    link?:
+                      | T
+                      | {
+                          type?: T;
+                          newTab?: T;
+                          reference?: T;
+                          url?: T;
+                          label?: T;
+                        };
+                    description?: T;
+                    hidden?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        cta?:
+          | T
+          | {
+              enabled?: T;
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                  };
+            };
+      };
+  footer?:
+    | T
+    | {
+        columns?:
+          | T
+          | {
+              title?: T;
+              links?:
+                | T
+                | {
+                    link?:
+                      | T
+                      | {
+                          type?: T;
+                          newTab?: T;
+                          reference?: T;
+                          url?: T;
+                          label?: T;
+                        };
+                    hidden?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        finalCta?:
+          | T
+          | {
+              heading?: T;
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                  };
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  branding?:
+    | T
+    | {
+        brandName?: T;
+        tagline?: T;
+        logo?: T;
+        logoLight?: T;
+        logoDark?: T;
+        favicon?: T;
+        appleTouchIcon?: T;
+      };
+  theme?:
+    | T
+    | {
+        primary?: T;
+        secondary?: T;
+        accent?: T;
+        background?: T;
+        text?: T;
+      };
+  contact?:
+    | T
+    | {
+        email?: T;
+        whatsapp?: T;
+        phone?: T;
+        location?: T;
+        address?: T;
+        businessId?: T;
+        googleMapsUrl?: T;
+        mapQuery?: T;
+        pickupSummary?: T;
+        socialLinks?:
+          | T
+          | {
+              platform?: T;
+              url?: T;
+              id?: T;
+            };
+      };
+  booking?:
+    | T
+    | {
+        bookLabel?: T;
+        bookUrl?: T;
+        enquiryLabel?: T;
+        enquiryUrl?: T;
+        contactLabel?: T;
+        whatsappLabel?: T;
+        mobileBookingBar?: T;
+      };
+  seo?:
+    | T
+    | {
+        siteUrl?: T;
+        defaultTitle?: T;
+        titleTemplate?: T;
+        defaultDescription?: T;
+        defaultOgImage?: T;
+        googleVerification?: T;
+        noIndexSite?: T;
+      };
+  analytics?:
+    | T
+    | {
+        gaMeasurementId?: T;
+        gtmId?: T;
+        metaPixelId?: T;
+        consentText?: T;
+      };
+  footer?:
+    | T
+    | {
+        statement?: T;
+        copyright?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
@@ -324,6 +3223,40 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSchedulePublish".
+ */
+export interface TaskSchedulePublish {
+  input: {
+    type?: ('publish' | 'unpublish') | null;
+    locale?: string | null;
+    doc?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null)
+      | ({
+          relationTo: 'faqs';
+          value: number | Faq;
+        } | null)
+      | ({
+          relationTo: 'testimonials';
+          value: number | Testimonial;
+        } | null)
+      | ({
+          relationTo: 'journal';
+          value: number | Journal;
+        } | null);
+    global?: string | null;
+    user?: (number | null) | User;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

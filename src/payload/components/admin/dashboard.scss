@@ -1,0 +1,120 @@
+.hn-dashboard {
+  margin-bottom: calc(var(--base) * 2.5);
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--base);
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: calc(var(--base) * 1.5);
+  }
+
+  &__eyebrow {
+    margin: 0 0 calc(var(--base) * 0.25);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--theme-elevation-500);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: clamp(24px, 3vw, 36px);
+    letter-spacing: -0.02em;
+  }
+
+  &__preview {
+    padding: 10px 18px;
+    border: 1px solid var(--theme-elevation-250);
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--theme-text);
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--theme-text);
+    }
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--theme-elevation-150);
+    border: 1px solid var(--theme-elevation-150);
+
+    a {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      height: 100%;
+      padding: calc(var(--base) * 0.9);
+      background: var(--theme-bg);
+      text-decoration: none;
+      color: var(--theme-text);
+
+      &:hover,
+      &:focus-visible {
+        background: var(--theme-elevation-50);
+      }
+
+      &.is-alert .hn-dashboard__value {
+        color: var(--theme-success-500);
+      }
+    }
+  }
+
+  &__value {
+    font-size: 34px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+
+  &__label {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  &__hint {
+    font-size: 12px;
+    color: var(--theme-elevation-500);
+  }
+
+  &__activity {
+    margin-top: calc(var(--base) * 1.5);
+
+    h2 {
+      margin: 0 0 calc(var(--base) * 0.5);
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--theme-elevation-100);
+    }
+
+    em {
+      margin-left: 8px;
+      font-style: normal;
+      color: var(--theme-elevation-500);
+    }
+  }
+}

@@ -48,3 +48,10 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Local SQLite database (contains user accounts and enquiries — never commit)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
