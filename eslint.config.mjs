@@ -26,6 +26,7 @@ const eslintConfig = [
   {
     ignores: [
       '.next/',
+      '.pages-build/',
       'node_modules/',
       'media/',
       'public/sequences/',

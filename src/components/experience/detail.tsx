@@ -28,7 +28,7 @@ export function ExperienceHero({ experience, index, crumbs }: Props & { index: n
           <div className="hero-settle absolute inset-0">
             <CmsImage media={experience.heroImage} sizes="100vw" priority sourceWidth={2880} />
             {video && isVideo(video) && video.url ? (
-              <AmbientVideo src={video.url} type={video.mimeType ?? undefined} poster={mediaUrl(experience.heroImage, 1440)} />
+              <AmbientVideo src={mediaUrl(video)!} type={video.mimeType ?? undefined} poster={mediaUrl(experience.heroImage, 1440)} />
             ) : null}
           </div>
         </Parallax>

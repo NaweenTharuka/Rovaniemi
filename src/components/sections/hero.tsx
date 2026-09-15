@@ -45,14 +45,14 @@ export function HeroBlock({ block, isFirst }: { block: HeroBlockData; isFirst: b
               <div className="hero-settle absolute inset-0">
                 <CmsImage media={block.image} sizes="100vw" priority={isFirst} sourceWidth={2880} />
                 {video && isVideo(video) && video.url ? (
-                  <AmbientVideo src={video.url} type={video.mimeType ?? undefined} poster={mediaUrl(block.image, 1440)} />
+                  <AmbientVideo src={mediaUrl(video)!} type={video.mimeType ?? undefined} poster={mediaUrl(block.image, 1440)} />
                 ) : null}
               </div>
             </Parallax>
           ) : (
             <div className="hero-settle absolute inset-0">
               <CmsImage media={block.image} sizes="100vw" priority={isFirst} sourceWidth={2880} />
-              {video?.url ? <AmbientVideo src={video.url} type={video.mimeType ?? undefined} poster={mediaUrl(block.image, 1440)} /> : null}
+              {video?.url ? <AmbientVideo src={mediaUrl(video)!} type={video.mimeType ?? undefined} poster={mediaUrl(block.image, 1440)} /> : null}
             </div>
           )}
           <div aria-hidden="true" className={cn('absolute inset-0 bg-gradient-to-t', OVERLAY[block.overlay ?? 'medium'])} />

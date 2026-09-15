@@ -1,5 +1,6 @@
 import type { Media } from '@/payload-types'
 
+import { toAbsoluteUrl, withBasePath } from './base-path'
 import { isObject } from './utils'
 
 export type MediaRef = Media | number | string | null | undefined
@@ -16,8 +17,9 @@ export const isVideo = (media?: Media | null) => Boolean(media?.mimeType?.starts
  */
 export const relativeUrl = (url?: string | null): string | null => {
   if (!url) return null
-  const match = url.match(/^https?:\/\/[^/]+(\/api\/media\/file\/.*)$/)
-  return match ? match[1] : url
+  // The server URL may carry a sub-path (static preview), so match the media route anywhere after the host.
+  const match = url.match(/^https?:\/\/[^/]+(?:\/.*?)?(\/api\/media\/file\/.*)$/)
+  return withBasePath(match ? match[1] : url)
 }
 
 /**
@@ -53,5 +55,5 @@ export const ogImageUrl = (ref: MediaRef, origin: string) => {
   const media = asMedia(ref)
   const url = relativeUrl(media?.sizes?.og?.url) || mediaUrl(media, 1200)
   if (!url) return undefined
-  return url.startsWith('http') ? url : `${origin}${url}`
+  return toAbsoluteUrl(origin, url)
 }

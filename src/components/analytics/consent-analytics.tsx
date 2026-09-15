@@ -4,6 +4,7 @@ import Script from 'next/script'
 import { useSyncExternalStore } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { withBasePath } from '@/lib/base-path'
 
 type Ids = { ga: string | null; gtm: string | null; metaPixel: string | null }
 type Choice = 'granted' | 'denied' | 'unset' | 'server'
@@ -86,7 +87,7 @@ export function ConsentAnalytics({ ids, text, privacyHref }: { ids: Ids; text?: 
         >
           <p className="text-sm text-fg-muted">
             {text || 'We use optional analytics cookies to understand how visitors use this site.'}{' '}
-            <a href={privacyHref} className="text-fg underline underline-offset-4">
+            <a href={withBasePath(privacyHref)} className="text-fg underline underline-offset-4">
               Privacy Policy
             </a>
           </p>

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type * as React from 'react'
 
+import { withBasePath } from '@/lib/base-path'
 import { type CmsLink as CmsLinkData, resolveLink, type ResolvedLink } from '@/lib/links'
 import { cn } from '@/lib/utils'
 
@@ -37,7 +38,7 @@ export function CmsLink({ link, appearance, size = 'md', className, arrow = true
   if (external || /^(mailto:|tel:)/.test(resolved.href)) {
     return (
       <a
-        href={resolved.href}
+        href={withBasePath(resolved.href)}
         className={classes}
         target={resolved.newTab ? '_blank' : undefined}
         rel={resolved.newTab ? 'noopener noreferrer' : undefined}

@@ -1,5 +1,6 @@
 import type { Experience, SiteSetting } from '@/payload-types'
 
+import { toAbsoluteUrl } from './base-path'
 import { mediaUrl } from './media'
 import { pathFor } from '@/payload/preview'
 import { brandName, siteOrigin } from './site'
@@ -7,7 +8,7 @@ import { brandName, siteOrigin } from './site'
 type JsonLd = Record<string, unknown>
 
 const absolute = (origin: string, url?: string | null) =>
-  url ? (url.startsWith('http') ? url : `${origin}${url}`) : undefined
+  url ? toAbsoluteUrl(origin, url) : undefined
 
 export const organizationJsonLd = (settings: SiteSetting): JsonLd => {
   const origin = siteOrigin(settings)

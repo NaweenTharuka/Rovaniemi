@@ -21,7 +21,9 @@
     "generate:sequence": "node scripts/generate-sequence.mjs",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
-    "photos:migrate": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/seed/migrate-photos.ts"
+    "photos:migrate": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/seed/migrate-photos.ts",
+    "pages:build": "node scripts/export-github-pages.mjs",
+    "pages:deploy": "node scripts/export-github-pages.mjs --deploy"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.89.0",

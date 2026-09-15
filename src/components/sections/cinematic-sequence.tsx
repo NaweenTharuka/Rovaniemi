@@ -2,12 +2,13 @@ import { ImageSequence } from '@/components/animations/image-sequence'
 import { TextReveal } from '@/components/animations/reveal'
 import { CmsImage } from '@/components/media/cms-image'
 import { parseSectionLabel, SectionLabel } from '@/components/ui/primitives'
+import { withBasePath } from '@/lib/base-path'
 import { mediaUrl } from '@/lib/media'
 import type { CinematicSequenceBlock as SequenceBlockData } from '@/payload-types'
 
 const expand = (pattern?: string | null, count?: number | null, padding = 3, start = 1) => {
   if (!pattern || !count || !pattern.includes('{index}')) return []
-  return Array.from({ length: count }, (_, i) => pattern.replace('{index}', String(start + i).padStart(padding, '0')))
+  return Array.from({ length: count }, (_, i) => withBasePath(pattern.replace('{index}', String(start + i).padStart(padding, '0'))))
 }
 
 export function CinematicSequenceBlock({ block }: { block: SequenceBlockData }) {
